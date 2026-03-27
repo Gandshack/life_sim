@@ -15,6 +15,8 @@ use crate::{
 };
 
 pub struct ParticleWorld {
+    pub width: i32,
+    pub height: i32,
     pub particle_count_per_type: u32,
     pub particle_types: u32,
     pub particles: Vec<Particle>,
@@ -22,8 +24,10 @@ pub struct ParticleWorld {
 }
 
 impl ParticleWorld {
-    pub fn new(particle_count: u32, particle_types: u32) -> Self {
+    pub fn new(particle_count: u32, particle_types: u32, width: i32, height: i32) -> Self {
         Self {
+            width,
+            height,
             particle_count_per_type: particle_count,
             particle_types,
             particles: Vec::new(),
@@ -81,7 +85,7 @@ impl ParticleWorld {
     }
 
     pub fn apply_forces(&mut self) {
-        let friction = 0.8;
+        let friction = 0.5;
         let mut velocities = Vec::<Vector2>::new();
         velocities.resize(self.particles.len(), Vector2::zero());
         for (i, partice_a) in self.particles.iter().enumerate() {
@@ -98,7 +102,16 @@ impl ParticleWorld {
         }
 
         for (particle, velocity) in self.particles.iter_mut().zip(velocities.iter()) {
-            particle.position += *velocity * friction;
+            let mut velocity = *velocity;
+            if particle.position.x >= self.width as f32 || particle.position.x <= 0.0 {
+                velocity = velocity * -1.0 as f32;
+            }
+
+            if particle.position.y >= self.height as f32 || particle.position.y <= 0.0 {
+                velocity = velocity * -1.0 as f32;
+            }
+
+            particle.position += velocity * friction;
         }
     }
 }
